@@ -1,5 +1,4 @@
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.*
@@ -8,9 +7,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -20,29 +20,32 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import androidx.compose.ui.graphics.toComposeImageBitmap
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.painterResource
 
 fun main() = application {
     val width = 500.dp
     val height = 300.dp
+    val AppIcon = painterResource("icon.png")
+
+
     Window(onCloseRequest = ::exitApplication,title = "Соединение tif в png", icon = AppIcon, state = WindowState(width = width, height = height)) {
         App()
     }
 }
 
-object AppIcon : Painter() {
-    override val intrinsicSize = Size(256f, 256f)
-
-    override fun DrawScope.onDraw() {
-        val im: BufferedImage = ImageIO.read(File("icon.png"))
-        val im2 = BufferedImage(size.width.toInt(),size.height.toInt(),BufferedImage.TYPE_INT_ARGB)
-        val draw = im2.createGraphics()
-        val koef = im2.width/im.width.toDouble()
-        draw.scale(koef,koef)
-        draw.drawImage(im,0,0,null)
-        drawImage(im2.toComposeImageBitmap())
-    }
-}
+//object AppIcon : Painter() {
+//    override val intrinsicSize = Size(256f, 256f)
+//
+//    override fun DrawScope.onDraw() {
+//        val im: BufferedImage = ImageIO.read(File("icon.png"))
+//        val im2 = BufferedImage(size.width.toInt(),size.height.toInt(),BufferedImage.TYPE_INT_ARGB)
+//        val draw = im2.createGraphics()
+//        val koef = im2.width/im.width.toDouble()
+//        draw.scale(koef,koef)
+//        draw.drawImage(im,0,0,null)
+//        drawImage(im2.toComposeImageBitmap())
+//    }
+//}
 
 @Composable
 fun App() {
