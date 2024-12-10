@@ -7,10 +7,10 @@ import javax.imageio.ImageIO
 import javax.swing.JFileChooser
 import kotlin.math.abs
 
-fun getFileFromChooseDialog(): Array<File>?{
+fun getFileFromChooseDialog(): File?{
     val fc = TifFileChooser()
     return if(fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-        fc.selectedFiles else null
+        fc.selectedFile else null
 }
 
 fun cropAndConcat(images: MutableList<BufferedImage>, leftUp: Point, rightBottom: Point): BufferedImage {
@@ -24,6 +24,83 @@ fun cropAndConcat(images: MutableList<BufferedImage>, leftUp: Point, rightBottom
 //        processImage.fillRect((i+1)*width-50,10,50,40)
     }
     return resultImage
+}
+
+fun cropAndConcateImagesStartEnd(file1: File, file2:File,list1: Int,list2: Int, part1:Boolean, part2: Boolean, part3: Boolean,
+                                 v: String, cropRegion: CropRegion,
+                                 eraseHourOnEachList: Boolean,
+                                 onUpdateProgress: (Int) -> Unit,
+                                 onCloseRequest: () -> Boolean): String{
+    var resMessage = ""
+    var resFile: File?
+        try {
+            val images = ImageRepository().readAllImages(file1)
+            val images2 = ImageRepository().readAllImages(file2)
+            val imagesCropped = MutableList<BufferedImage?>(images.size){null}
+            onUpdateProgress(5)
+            var step = (100 - 20) / (images.size)
+            cropRegion.autoDetect(
+                BinaryColorSchemeConverter(180).convert(
+                    GrayColorSchemeConverter().convert(images[0])))
+//            println("$part1 $part2 $part3 $list1 $list2")
+//            ImageIO.write(BinaryColorSchemeConverter(180).convert(
+//                GrayColorSchemeConverter().convert(images[0])),"PNG",File("resFile.png"))
+            var progress = 15
+            onUpdateProgress(progress)
+            val x = cropRegion.x
+            val y = cropRegion.y
+
+            val w = cropRegion.w
+            val h = cropRegion.h
+//            println("$x $y $w $h")
+            val res = BufferedImage(w*images.size,h, BufferedImage.TYPE_INT_RGB)
+            val resGraphics = res.createGraphics()
+            for(i in images.indices){
+                if(onCloseRequest()){
+                    break
+                }
+                if(i < list1 - 1){
+                    if(part1)
+                        imagesCropped[i] = images[i].getSubimage(x,y,w,h)
+                    else
+                        imagesCropped[i] = images2[i].getSubimage(x,y,w,h)
+                } else if(i < list2 - 1){
+                    if(part2)
+                        imagesCropped[i] = images[i].getSubimage(x,y,w,h)
+                    else
+                        imagesCropped[i] = images2[i].getSubimage(x,y,w,h)
+                } else {
+
+                        if(part3)
+                            imagesCropped[i] = images[i].getSubimage(x,y,w,h)
+                        else
+                            imagesCropped[i] = images2[i].getSubimage(x,y,w,h)
+
+                }
+
+                if (eraseHourOnEachList) paintWhiteRightUpCorner(imagesCropped[i]!!, square_size = 40)
+
+            }
+            for(i in images.indices){
+                if(onCloseRequest()){
+                    break
+                }
+                resGraphics.drawImage(imagesCropped[i],i*w,0,null)
+                progress += step
+                onUpdateProgress(progress)
+            }
+            if(!onCloseRequest()){
+                progress = 95
+                onUpdateProgress(progress)
+                resFile = File(file1.parent + "/" + file1.nameWithoutExtension + "_$v.png")
+                ImageIO.write(res,"PNG",resFile)
+                resMessage += "Результат сохранен в ${resFile.absolutePath}\n"
+            }
+        } catch (e: Exception){
+            resMessage += "Ошибка обработки файла: ${e.message}\n"
+        }
+
+    return resMessage
 }
 
 

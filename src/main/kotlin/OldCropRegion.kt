@@ -7,7 +7,6 @@ class OldCropRegion: CropRegion() {
             var cornerLeft = Point()
             var cornerRight = Point()
             var cornerLeftUp = Point()
-//            var padd = 27+3
             setRightCorner(image, cornerRight, square_size)
             setLeftDownCorner(image, cornerLeft, square_size)
             setLeftUpCorner(image, cornerLeftUp, cornerLeft,cornerRight,square_size)
