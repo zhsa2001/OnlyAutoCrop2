@@ -1,14 +1,19 @@
 
 import java.awt.Color
+import java.awt.Image
 import java.awt.Point
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.JFileChooser
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
-fun getFileFromChooseDialog(): File?{
-    val fc = TifFileChooser()
+val threshold = 210
+
+fun getFileFromChooseDialog(path: File?): File?{
+    val fc = TifFileChooser(path)
     return if(fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
         fc.selectedFile else null
 }
@@ -26,6 +31,124 @@ fun cropAndConcat(images: MutableList<BufferedImage>, leftUp: Point, rightBottom
     return resultImage
 }
 
+fun cropAndConcatManyImages(fileAndDiapasons: FileAndDiapasons, cropRegion: CropRegion,
+                            eraseOnEachList: Boolean,
+                            onUpdateProgress: (Int) -> Unit,
+                            onCloseRequest: () -> Boolean,
+                            onCurrentFileChanged: (String) -> Unit): String {
+    var resMessage = ""
+    var resFile: File? = null
+    val imagesToConcatenate = mutableListOf<BufferedImage>()
+    for(element in fileAndDiapasons.files){
+        if(onCloseRequest()){
+            break
+        }
+        try {
+            onUpdateProgress(0)
+            if(onCloseRequest()){
+                break
+            }
+            element.file?.let {
+                resFile = File(it.parent + "/" + it.nameWithoutExtension + ".png")
+                onCurrentFileChanged(it.name)
+//                onCurrentFileChanged(element.file!!.name)
+                val images = ImageRepository().readAllImages(it)
+
+                cropRegion.autoDetect(
+                    BinaryColorSchemeConverter(threshold).convert(
+                        GrayColorSchemeConverter().convert(images.last())))
+
+//                ImageIO.write(BinaryColorSchemeConverter(threshold).convert(
+//                    GrayColorSchemeConverter().convert(images[0])), "PNG", File("black.png"))
+                var imagesSize = (images.size)
+                var progress = 15
+                var start = 0
+                var end = imagesSize
+                onUpdateProgress(progress)
+                element.start?.let {
+                    start = max(min(imagesSize,element.start!!) - 1,0)
+                    imagesSize -= start
+                }
+                element.end?.let {
+                    end = min(max(element.end!!,start+1), images.size)
+                    imagesSize -= (images.size - end)
+                }
+                var step = (100 - 20) / imagesSize
+
+                val x = cropRegion.x
+                val y = cropRegion.y
+
+                val w = cropRegion.w
+                val h = cropRegion.h
+                val imagesCropped = MutableList<BufferedImage?>(imagesSize){null}
+                val res = BufferedImage(w*imagesSize,h, BufferedImage.TYPE_INT_RGB)
+                val resGraphics = res.createGraphics()
+                for(i in start..<end){
+                    if(onCloseRequest()){
+                        break
+                    }
+                    imagesCropped[i - start] = images[i].getSubimage(x,y,w,h)
+                    if (eraseOnEachList){
+                        paintWhiteRightUpCorner(imagesCropped[i - start]!!, square_size = 40)
+                    }
+
+
+                }
+
+                for(i in imagesCropped.indices){
+                    if(onCloseRequest()){
+                        break
+                    }
+                    resGraphics.drawImage(imagesCropped[i],i*w,0,null)
+                    progress += step
+                    onUpdateProgress(progress)
+                }
+                imagesToConcatenate.add(res)
+                if(!onCloseRequest()){
+                    progress = 95
+                    onUpdateProgress(progress)
+//                    resFile = File(element.file!!.parent + "/" + element.file!!.nameWithoutExtension + ".png")
+//                    ImageIO.write(res,"PNG",resFile)
+//                    resMessage += "Результат сохранен в ${resFile!!.absolutePath}\n"
+                }
+            }
+
+        } catch (e: Exception){
+            resMessage += "Ошибка обработки файла ${element.file!!.absolutePath}: ${e.message}\n"
+        }
+    }
+    var fullWidth = 0
+    var curWidth = 0
+    var height = if (imagesToConcatenate.size > 0) imagesToConcatenate[0].height else 0
+    for(i in imagesToConcatenate.indices){
+        if(onCloseRequest()){
+            break
+        }
+        val scale = height.toDouble() / imagesToConcatenate[i].height
+        val width = imagesToConcatenate[i].width
+        val im = BufferedImage((width*scale).toInt(),height,BufferedImage.TYPE_INT_RGB)
+        val graphics = im.createGraphics()
+        graphics.drawImage(imagesToConcatenate[i].getScaledInstance((width*scale).toInt(),height, Image.SCALE_SMOOTH),0,0,null)
+        imagesToConcatenate[i] = im
+        fullWidth += imagesToConcatenate[i].width
+    }
+    if(!onCloseRequest() && fullWidth > 0 && height > 0){
+        var res = BufferedImage(fullWidth,height,BufferedImage.TYPE_INT_RGB)
+        val resGraphics = res.createGraphics()
+        for(im in imagesToConcatenate){
+            resGraphics.drawImage(im,curWidth,0,null)
+            curWidth += im.width
+        }
+        resFile?.let {
+            ImageIO.write(res,"PNG",resFile)
+            resMessage += "Результат сохранен в ${resFile!!.absolutePath}\n"
+        }
+    }
+
+    return resMessage
+}
+
+
 fun cropAndConcateImagesStartEnd(file1: File, file2:File,list1: Int,list2: Int, part1:Boolean, part2: Boolean, part3: Boolean,
                                  v: String, cropRegion: CropRegion,
                                  eraseHourOnEachList: Boolean,
@@ -40,7 +163,7 @@ fun cropAndConcateImagesStartEnd(file1: File, file2:File,list1: Int,list2: Int, 
             onUpdateProgress(5)
             var step = (100 - 20) / (images.size)
             cropRegion.autoDetect(
-                BinaryColorSchemeConverter(180).convert(
+                BinaryColorSchemeConverter(threshold).convert(
                     GrayColorSchemeConverter().convert(images[0])))
 //            println("$part1 $part2 $part3 $list1 $list2")
 //            ImageIO.write(BinaryColorSchemeConverter(180).convert(
@@ -123,7 +246,7 @@ fun cropAndConcateImages(files: List<File>,
             onUpdateProgress(5)
             var step = (100 - 20) / (images.size)
             cropRegion.autoDetect(
-                BinaryColorSchemeConverter(180).convert(
+                BinaryColorSchemeConverter(threshold).convert(
                     GrayColorSchemeConverter().convert(images[0])))
 
             var progress = 15
@@ -208,7 +331,9 @@ fun setRightCorner(image: BufferedImage, cornerRight: Point, square_size: Int){
         for (j in image.width-1 downTo square_size/2){
             raster.getPixel(j,i,pixel)
             if(pixel[0] == 0){
-                val line = findVerticalLine(image,j - square_size/2,i + square_size/2,square_size)
+
+                val line = findVerticalLine(image,j - 2,i + square_size/2,square_size)
+
                 if (line.size == 2 && abs(line[0].y - line[1].y) > (square_size - 2)){
                     find = true
                     x1  = line[0].x - square_size/2
@@ -236,25 +361,30 @@ fun setLeftDownCorner(image: BufferedImage, cornerLeft: Point, square_size: Int)
     var find = false
     var x1 = 0
     var y1 = 0
-    for(i in image.height-1 downTo 0){
-        val pixel = IntArray(4)
-        raster.getPixel(image.width/2,i,pixel)
-        if(pixel[0] == 0){
-            val line = findHorizontalLine(image,image.width/2,i,square_size)
-            if(line.size == 2 && abs(line[0].x - line[1].x) > square_size - 2){
-                y1 = i - square_size/2
-                x1 = image.width/2
-                break
+    var yStart = image.height-1
+    while(!find && yStart > square_size){
+        for(i in yStart downTo 0){
+            val pixel = IntArray(4)
+            raster.getPixel(image.width/2,i,pixel)
+            if(pixel[0] == 0){
+                val line = findHorizontalLine(image,image.width/2,i,square_size)
+                if(line.size == 2 && abs(line[0].x - line[1].x) > square_size - 2){
+                    y1 = i - square_size/2
+                    x1 = image.width/2
+                    break
+                }
             }
         }
-    }
-    for(j in x1 downTo 0){
-        val corner = checkT180(image,j,y1,square_size)
-        if(corner != null){
-            cornerLeft.x = corner.x
-            cornerLeft.y = corner.y
-            break
+        for(j in x1 downTo 0){
+            val corner = checkT180(image,j,y1,square_size)
+            if(corner != null){
+                cornerLeft.x = corner.x
+                cornerLeft.y = corner.y
+                find = true
+//                break
+            }
         }
+        yStart = y1
     }
 }
 

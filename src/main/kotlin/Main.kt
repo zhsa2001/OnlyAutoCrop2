@@ -1,3 +1,4 @@
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
@@ -6,14 +7,24 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import ui.filechooser.UIStage
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.io.File
+import javax.imageio.ImageIO
+import kotlin.concurrent.thread
 
 fun main() = application {
     val width = 500.dp
@@ -24,10 +35,29 @@ fun main() = application {
     }
 }
 
+data class FileAndDiapason(var file: File? = null, var start: Int? = 1, var end: Int? = 1)
+
+object FileAndDiapasons{
+    val files = mutableListOf<FileAndDiapason>()
+    fun add(){
+
+    }
+    fun update(index: Int, file: File?){
+        if (index in files.indices){
+            files[index] = FileAndDiapason(file)
+        }
+    }
+
+    fun clear(){
+        files.clear()
+    }
+}
+
 @Composable
 fun App() {
     var stage by remember { mutableStateOf(UIStage.START) }
-    var sourceFile by remember { mutableStateOf<File?>(null) }
+//    var files by remember { mutableStateOf(FileAndDiapasons) }
+    var path by remember { mutableStateOf<File?>(null) }
 //    var files by remember { mutableStateOf<List<File>?>(null) }
     var message by remember { mutableStateOf("") }
     var cropRegion: CropRegion by remember { mutableStateOf(CropRegion())}
@@ -43,7 +73,14 @@ fun App() {
     MaterialTheme {
         Box(modifier = Modifier.padding(12.dp)){
             when(stage){
-                UIStage.START -> MainScreen(
+                UIStage.START -> ManyFilesScreen({ stage = UIStage.FILE_CHOOSEN },
+                    {
+                        it?.let{
+                            path = it
+                        }
+                        return@ManyFilesScreen path
+                    })
+                    /* MainScreen(
                     {
                         it?.let { file1 = it }
                         return@MainScreen file1
@@ -63,6 +100,8 @@ fun App() {
                     },
                     { stage = UIStage.FILE_CHOOSEN }
                     )
+
+                     */
                 UIStage.FILE_CHOOSEN -> CropScreen(
                     {
                         it?.let { cropRegion = it }
@@ -72,18 +111,185 @@ fun App() {
                     { stage = UIStage.CROPPING },
                     { returnToStart() }
                 )
-                UIStage.CROPPING -> ProgressScreen2(file1!!,file2!!,
+                UIStage.CROPPING -> ProgressScreen3(cropRegion!!,
+
+                    /*ProgressScreen2(file1!!,file2!!,
                     list1,list2,part2,
                     cropRegion!!,
+
+                     */
                     eraseHourOnEachList,
                     { message = it},
                     { stage = UIStage.CROPPING_IS_DONE },
                     { returnToStart() }
                 )
-                UIStage.CROPPING_IS_DONE -> ResultOfCropping(message,
-                    { returnToStart() }
-                )
+                UIStage.CROPPING_IS_DONE -> {
+                    ResultOfCropping(message,
+                        { returnToStart() }
+                    )
+                    FileAndDiapasons.clear()
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun oddEvenScreen(){
+
+}
+
+@Composable
+fun ManyFilesScreen(goNext: () -> Unit, path: (File?) -> File?){
+    var files by remember { mutableStateOf(FileAndDiapasons) }
+    var filesListSize by remember { mutableStateOf(files.files.size)}
+    Column {
+
+        Row {
+            Button(onClick = {
+                files.files.add(FileAndDiapason())
+                filesListSize++
+            },
+                modifier = Modifier.padding(0.dp,0.dp,8.dp,0.dp)
+            ){
+                Text("Добавить файл и диапазон")
+            }
+            Button(onClick = {
+//                files.files.add(FileAndDiapason())
+//                filesListSize++
+                goNext()
+            }){
+                Text("Далее")
+            }
+        }
+
+
+        for (i in 0..<filesListSize){
+            Row (modifier = Modifier.padding(8.dp)) {
+                Button(onClick = {
+                    val file = getFileFromChooseDialog(path(null))
+
+                    file?. let {
+                        files.update(i,file);
+                        path(File(file.parent))
+                    }
+                    filesListSize = -1
+                    filesListSize = files.files.size},
+                    modifier = Modifier.align(Alignment.CenterVertically)){
+                    Text("Выбрать файл")
+                }
+                Button(onClick = {
+                    files.files.removeAt(i)
+                    filesListSize--
+                },
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                    ){
+                    Text("–")
+                }
+                files.files[i].file?.let {
+                    Text(files.files[i].file!!.name, modifier = Modifier.width(300.dp).padding(10.dp,0.dp).align(Alignment.CenterVertically))
+//                    OutlinedTextField(if (files.files[i].start != null) files.files[i].start.toString() else "",
+//                        onValueChange = {
+//                            println(it)
+//                            if (it == ""){
+//                                files.files[i].start = null
+//                            } else if (checkIsNum(it)){
+//                                filesListSize = -1
+//                                files.files[i].start = it.toInt()
+//                                filesListSize = files.files.size
+//                            }
+//                        },
+//                        modifier = Modifier.width(80.dp)
+//                    )
+//                    Text(" - ")
+////                    OutlinedTextField("111\n11", onValueChange = {})
+//                    OutlinedTextField(if (files.files[i].end != null) files.files[i].end.toString() else "",
+//                        onValueChange = {
+//                            println(it)
+//                            if (it == ""){
+//                                files.files[i].end = null
+//                            } else if (checkIsNum(it)){
+//                                filesListSize = -1
+//                                files.files[i].end = it.toInt()
+//                                filesListSize = files.files.size
+//                            }
+//                        },
+//                        modifier = Modifier.width(80.dp)
+//                    )
+                    OutlinedTextField(
+                                "${if (files.files[i].start == null) "" else files.files[i].start} -" +
+                                        " ${if (files.files[i].end == null) "" else files.files[i].end}",
+                        onValueChange = {
+                            val nums = it.replace(" ","").split("-")
+                            for(j in 0..1) {
+                                if (nums.size > j) {
+                                    if (nums[j] == "") {
+                                        if (j == 0)
+                                            files.files[i].start = null
+                                        else
+                                            files.files[i].end = null
+                                    } else if (checkIsNum(nums[j])) {
+                                        if (j == 0)
+                                            files.files[i].start = nums[j].toInt()
+                                        else
+                                            files.files[i].end = nums[j].toInt()
+                                    }
+                                }
+                            }
+//
+//                            if (it == ""){
+//                                files.files[i].end = null
+//                            } else if (checkIsNum(it)){
+//
+//                                files.files[i].end = it.toInt()
+//
+//                            }
+                            filesListSize = -1
+                            filesListSize = files.files.size
+                        },
+                        modifier = Modifier.width(80.dp)
+                    )
+                }
+
+            }
+        }
+
+    }
+}
+
+
+@Composable
+fun ProgressScreen3(cropRegion: CropRegion, eraseHourOnEachList: Boolean, returnMessage: (String) -> Unit, changeState:()-> Unit, returnToStart:()->Unit) {
+    var progress by remember { mutableStateOf(0) }
+    var closeTask by remember { mutableStateOf(false) }
+    var curTask by remember { mutableStateOf("") }
+
+    LaunchedEffect(null){
+        Thread(){
+            var resMessage = cropAndConcatManyImages(
+                    FileAndDiapasons,
+                    cropRegion,
+                    eraseHourOnEachList,
+                    { progress = it },
+                    { return@cropAndConcatManyImages closeTask },
+                    { curTask = it}
+                )
+            if (!closeTask) {
+                returnMessage(resMessage)
+                changeState()
+            }
+
+
+        }.start()
+    }
+
+    Column{
+        Text("${curTask}: ${progress}% выполнено")
+        Button(onClick = {
+            closeTask = true
+            returnToStart()
+        }) {
+            Text("Отменить")
         }
     }
 }
@@ -105,7 +311,7 @@ fun MainScreen(file1GetSet:(File?)->File?,
     Column(Modifier.verticalScroll(state).fillMaxWidth()){
         Row{
             Button(onClick = {
-                val file1 = getImageSource()
+                val file1 = getImageSource(null)
                 file1GetSet(file1)
 
             }) {
@@ -115,7 +321,7 @@ fun MainScreen(file1GetSet:(File?)->File?,
         }
         Row {
             Button(onClick = {
-                val file2 = getImageSource()
+                val file2 = getImageSource(null)
                 file2GetSet(file2)
             }) {
                 Text("Выбрать второй файл")
@@ -157,9 +363,28 @@ fun CropScreen(getSetCropRegion:(CropRegion?)->CropRegion, onEraseHourSet:(Boole
     var y by remember { mutableStateOf(getSetCropRegion(null).y) }
     var w by remember { mutableStateOf(getSetCropRegion(null).w) }
     var h by remember { mutableStateOf(getSetCropRegion(null).h) }
+    var imagePreview by remember { mutableStateOf(ImageBitmap(0,0)) }
+    //
     var eraseHourOnEachList by remember { mutableStateOf(true) }
     val state = rememberScrollState()
-    LaunchedEffect(Unit) { state.animateScrollTo(100) }
+    LaunchedEffect(Unit) {
+        state.animateScrollTo(100)
+//        coroutineScope {
+            thread {
+                if (FileAndDiapasons.files.size > 0
+                    && FileAndDiapasons.files[0].file != null
+                    && FileAndDiapasons.files[0].file!!.exists()){
+                    try {
+                        imagePreview = ImageIO.read(FileAndDiapasons.files[0].file!!).toComposeImageBitmap()
+                    } catch (e: Exception){
+
+                    }
+                }
+//            }
+
+
+        }
+    }
     Column(Modifier.verticalScroll(state).fillMaxWidth()) {
         Column ( modifier = Modifier.selectableGroup()){
             for(i in 0..2){
@@ -173,9 +398,13 @@ fun CropScreen(getSetCropRegion:(CropRegion?)->CropRegion, onEraseHourSet:(Boole
                 }
             }
             if (cropMode == 2){
-                TextField(x.toString(),onValueChange = { if (checkIsNum(it)) x = if(it == "") 0 else it.toInt() },
+                TextField(x.toString(),onValueChange = { val xPrev = x; if (checkIsNum(it)) x = if(it == "") 0 else it.toInt();
+//                    w -= (x - xPrev)
+                                                       },
                     label = { Text("x-координата левого верхнего угла ") })
-                TextField(y.toString(),onValueChange = { if (checkIsNum(it)) y = if(it == "") 0 else it.toInt() },
+                TextField(y.toString(),onValueChange = { val yPrev = y; if (checkIsNum(it)) y = if(it == "") 0 else it.toInt();
+//                    h -= (y - yPrev)
+                                                       },
                     label = { Text("y-координата левого верхнего угла ") })
 
                 TextField(w.toString(),onValueChange = { if (checkIsNum(it)) w = if(it == "") 0 else it.toInt() },
@@ -183,6 +412,28 @@ fun CropScreen(getSetCropRegion:(CropRegion?)->CropRegion, onEraseHourSet:(Boole
 
                 TextField(h.toString(),onValueChange = { if (checkIsNum(it)) h = if(it == "") 0 else it.toInt() },
                     label = { Text("высота области") })
+
+                Column (
+                    modifier = Modifier.drawWithContent {
+////                        drawRect(
+////
+////                                Color.Transparent
+////
+////                        )
+                        drawContent()
+                        val size = this.size
+                        val scale = size.width / imagePreview.width
+//                        drawImage(imagePreview., topLeft = Offset(x.toFloat(),y.toFloat()))
+                        drawRect(color = Color.hsl(36f,0.7f,0.5f,0.5f), topLeft = Offset(scale*x,scale*y), size = Size(scale*w,scale*h))
+                    }
+
+                ){
+                    Image(imagePreview,"Первое изображение из первого файла",
+//                        Modifier.graphicsLayer {
+//                            this.
+//                        }
+                    )
+                }
             }
 
         }
@@ -314,4 +565,4 @@ fun ResultOfCropping(message: String, returnToStart:()->Unit){
     }
 }
 
-fun getImageSource(): File? = getFileFromChooseDialog()
+fun getImageSource(path: File?): File? = getFileFromChooseDialog(path)

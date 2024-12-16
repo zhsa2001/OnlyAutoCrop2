@@ -21,6 +21,7 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
+//    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
 }
 
 compose.desktop {
@@ -38,7 +39,7 @@ compose.desktop {
                 iconFile.set(iconsRoot.resolve("icon.ico"))
                 menuGroup = "Compose Examples"
                 // see https://wixtoolset.org/documentation/manual/v3/howtos/general/generate_guids.html
-                upgradeUuid = "18159995-d967-4CD2-8885-77BFA97CFA9F"
+//                upgradeUuid = "18159995-d967-4CD2-8885-77BFA97CFA9F"
             }
             linux {
                 iconFile.set(iconsRoot.resolve("icon.png"))

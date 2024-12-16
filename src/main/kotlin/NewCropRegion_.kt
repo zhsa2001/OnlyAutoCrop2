@@ -1,5 +1,6 @@
 import java.awt.Point
 import java.awt.image.BufferedImage
+import kotlin.math.max
 
 class NewCropRegion_: CropRegion() {
     override fun autoDetect(image: BufferedImage?) {
@@ -12,6 +13,8 @@ class NewCropRegion_: CropRegion() {
             y = cornerRight.y
             w = cornerRight.x - x
             h = cornerLeft.y - y
+            w = max(w,100)
+            h = max(h,100)
             isSet = true
         }
     }
