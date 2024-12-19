@@ -31,7 +31,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "onlyAutoCrop"
-            packageVersion = "1.0.1"
+            packageVersion = "1.0.2"
 
             val iconsRoot = project.file("src/main/resources")
 
