@@ -1,9 +1,10 @@
+package imageProcessing
+
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
 class ImageRepository {
-//    val images = mutableListOf<BufferedImage>()
     fun readAllImages(file: File):MutableList<BufferedImage>{
         val stream = ImageIO.createImageInputStream(file)
         val images = mutableListOf<BufferedImage>()
@@ -20,7 +21,4 @@ class ImageRepository {
         reader.dispose()
         return images
     }
-//    companion object {
-//
-//    }
 }

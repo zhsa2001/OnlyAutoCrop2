@@ -1,3 +1,5 @@
+package imageProcessing
+
 import java.awt.Point
 import java.awt.image.BufferedImage
 import kotlin.math.max
@@ -10,7 +12,7 @@ class OldCropRegion: CropRegion() {
             val cornerLeftUp = Point()
             setRightCorner(image, cornerRight, square_size)
             setLeftDownCorner(image, cornerLeft, square_size)
-            setLeftUpCorner(image, cornerLeftUp, cornerLeft,cornerRight,square_size*2)
+            setLeftUpCorner(image, cornerLeftUp, cornerLeft, cornerRight, square_size * 2)
             x = cornerLeftUp.x
             y = cornerRight.y
             w = cornerRight.x - x + 1

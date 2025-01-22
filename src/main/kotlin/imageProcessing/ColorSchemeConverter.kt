@@ -1,3 +1,5 @@
+package imageProcessing
+
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.ColorConvertOp
@@ -6,7 +8,7 @@ interface ColorSchemeConverter {
     abstract fun convert(image: BufferedImage): BufferedImage
 }
 
-class GrayColorSchemeConverter: ColorSchemeConverter{
+class GrayColorSchemeConverter: ColorSchemeConverter {
     override fun convert(image: BufferedImage): BufferedImage {
         val gray = BufferedImage(image.width,image.height, BufferedImage.TYPE_BYTE_GRAY)
         val xformOp = ColorConvertOp(null)
@@ -15,8 +17,7 @@ class GrayColorSchemeConverter: ColorSchemeConverter{
     }
 }
 
-class BinaryColorSchemeConverter(val threshold: Int): ColorSchemeConverter{
-//    var threshold = threshold
+class BinaryColorSchemeConverter(val threshold: Int): ColorSchemeConverter {
     override fun convert(image: BufferedImage): BufferedImage {
             val image = image
             val binaryRaster = image.getData()

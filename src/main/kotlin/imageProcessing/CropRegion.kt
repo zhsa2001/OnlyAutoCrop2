@@ -1,3 +1,5 @@
+package imageProcessing
+
 import java.awt.image.BufferedImage
 
 open class CropRegion {

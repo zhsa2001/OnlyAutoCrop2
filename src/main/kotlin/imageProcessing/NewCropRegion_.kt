@@ -1,3 +1,5 @@
+package imageProcessing
+
 import java.awt.Point
 import java.awt.image.BufferedImage
 import kotlin.math.max
