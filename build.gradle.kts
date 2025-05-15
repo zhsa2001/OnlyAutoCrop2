@@ -27,13 +27,14 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "onlyAutoCrop"
-            packageVersion = "1.0.2"
+            packageVersion = "2.0.0"
 
             val iconsRoot = project.file("src/main/resources")
 
             windows {
                 iconFile.set(iconsRoot.resolve("icon.ico"))
                 menuGroup = "Compose Examples"
+                upgradeUuid = "f5b26089-5e46-462f-ae81-3ba539f3a622"
             }
             linux {
                 iconFile.set(iconsRoot.resolve("icon.png"))
