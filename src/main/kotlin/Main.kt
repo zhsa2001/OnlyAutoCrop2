@@ -11,11 +11,12 @@ import androidx.compose.ui.window.application
 import imageProcessing.CropRegion
 import logic.FileAndDiapasons
 import ui.UIStage
-import ui.screens.CropScreen
+import ui.screens.CropSetupScreen
 import ui.screens.ManyFilesScreen
 import ui.screens.ProgressScreen
 import ui.screens.ResultOfCropping
 import java.io.File
+import java.util.Calendar
 
 fun main() = application {
     val width = 500.dp
@@ -37,6 +38,8 @@ fun App() {
     val returnToStart: () -> Unit = { stage = UIStage.START }
     var eraseHourOnEachList by remember { mutableStateOf(true) }
     var desiredHeight by remember { mutableStateOf(0) }
+    var timeOnFirstList by remember { mutableStateOf(Calendar.getInstance()) }
+    var separateLists by remember { mutableStateOf(false) }
 
     MaterialTheme {
         Box(modifier = Modifier.padding(12.dp)){
@@ -49,13 +52,15 @@ fun App() {
                         path
                     })
 
-                UIStage.FILE_CHOOSEN -> CropScreen(
+                UIStage.FILE_CHOOSEN -> CropSetupScreen(
                     {
                         it?.let { cropRegion = it }
                         cropRegion
                     },
                     { eraseHourOnEachList = it },
                     { desiredHeight = it },
+                    { separateLists = it },
+                    { timeOnFirstList = it },
                     { stage = UIStage.CROPPING },
                     { returnToStart() }
                 )
@@ -63,6 +68,8 @@ fun App() {
 
                     eraseHourOnEachList,
                     desiredHeight,
+                    separateLists,
+                    timeOnFirstList,
                     { message = it},
                     { stage = UIStage.CROPPING_IS_DONE },
                     { returnToStart() }
