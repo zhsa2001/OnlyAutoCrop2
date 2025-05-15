@@ -5,7 +5,10 @@ import java.awt.Image
 import java.awt.Point
 import java.awt.image.BufferedImage
 import java.io.File
+import java.nio.file.Files
+import java.util.Calendar
 import javax.imageio.ImageIO
+import kotlin.io.path.Path
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -17,7 +20,9 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
                             onUpdateProgress: (Int) -> Unit,
                             onCloseRequest: () -> Boolean,
                             onCurrentFileChanged: (String) -> Unit,
-                            desiredHeight: Int = 0): String {
+                            desiredHeight: Int = 0,
+                            separateLists: Boolean = true,
+                            time: Calendar = Calendar.Builder().setTimeOfDay(5,30,0).build()): String {
     var resMessage = ""
     var resFile: File? = null
     val imagesToConcatenate = mutableListOf<BufferedImage>()
@@ -33,7 +38,7 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
             element.file?.let {
                 if(resFile == null){
                     resFile = File(it.parent + "/" + it.nameWithoutExtension + ".png")
-                    resFile = File(it.parent + "/" + it.nameWithoutExtension + "/")
+//                    resFile = File(it.parent + "/" + it.nameWithoutExtension + "/")
                 }
                 onCurrentFileChanged(it.name)
                 val images = ImageRepository().readAllImages(it)
@@ -42,7 +47,7 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
                     BinaryColorSchemeConverter(threshold).convert(
                         GrayColorSchemeConverter().convert(images.last())))
 
-                var imagesSize = (images.size)
+                var imagesSize = images.size
                 var progress = 15
                 var start = 0
                 var end = imagesSize
@@ -62,40 +67,23 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
 
                 val w = cropRegion.w
                 val h = cropRegion.h
-                val imagesCropped = MutableList<BufferedImage?>(imagesSize){null}
-                val res = BufferedImage(w*imagesSize,h, BufferedImage.TYPE_INT_RGB)
-                val resGraphics = res.createGraphics()
+                val imagesCropped = mutableListOf<BufferedImage>()
                 for(i in start..<end){
                     if(onCloseRequest()){
                         break
                     }
-                    imagesCropped[i - start] = images[i].getSubimage(x,y,w,h)
+                    imagesCropped.add(images[i].getSubimage(x,y,w,h))
                     if (eraseOnEachList){
-                        paintWhiteRightUpCorner(imagesCropped[i - start]!!, square_size = 40)
+                        paintWhiteRightUpCorner(imagesCropped.last(), square_size = 40)
                     }
                 }
-
-                for(i in imagesCropped.indices){
-                    if(onCloseRequest()){
-                        break
-                    }
-                    resGraphics.drawImage(imagesCropped[i],i*w,0,null)
-                    progress += step
-                    onUpdateProgress(progress)
-                }
-                imagesToConcatenate.add(res)
-                if(!onCloseRequest()){
-                    progress = 95
-                    onUpdateProgress(progress)
-                }
+                imagesToConcatenate.addAll(imagesCropped)
             }
-
         } catch (e: Exception){
             resMessage += "Ошибка обработки файла ${element.file!!.absolutePath}: ${e.message}\n"
         }
     }
     var fullWidth = 0
-    var curWidth = 0
     var height =
         if (imagesToConcatenate.size > 0)
             if (desiredHeight > 0)
@@ -107,29 +95,72 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
             break
         }
         val scale = height.toDouble() / imagesToConcatenate[i].height
-        val width = imagesToConcatenate[i].width
-        val im = BufferedImage((width*scale).toInt(),height,BufferedImage.TYPE_INT_RGB)
+        val width = (imagesToConcatenate[i].width*scale).toInt()
+        val im = BufferedImage(width,height,BufferedImage.TYPE_INT_RGB)
         val graphics = im.createGraphics()
-        graphics.drawImage(imagesToConcatenate[i].getScaledInstance((width*scale).toInt(),height, Image.SCALE_SMOOTH),0,0,null)
+        graphics.drawImage(imagesToConcatenate[i].getScaledInstance(width,height, Image.SCALE_SMOOTH),0,0,null)
         imagesToConcatenate[i] = im
         fullWidth += imagesToConcatenate[i].width
     }
     if(!onCloseRequest() && fullWidth > 0 && height > 0){
-        var res = BufferedImage(fullWidth,height,BufferedImage.TYPE_INT_RGB)
-        val resGraphics = res.createGraphics()
-        for(im in imagesToConcatenate){
-            resGraphics.drawImage(im,curWidth,0,null)
-            curWidth += im.width
+        if(separateLists){
+            resFile?.let {
+                resMessage += saveSeparately(resFile!!, time, imagesToConcatenate)
+            }
+        } else {
+            resFile?.let {
+                resMessage += saveFullImage(resFile!!, fullWidth, height, imagesToConcatenate)
+            }
         }
-        resFile?.let {
-            ImageIO.write(res,"PNG",resFile)
-            resMessage += "Результат сохранен в ${resFile!!.absolutePath}\n"
-        }
+
     }
 
     return resMessage
 }
 
+fun getHourRoundUp(time: Calendar): Int{
+    var time = time.clone() as Calendar
+    time.add(Calendar.MINUTE, 59)
+    return time.get(Calendar.HOUR_OF_DAY)
+}
+
+fun saveFullImage(resFile: File, fullWidth: Int, height: Int, images: MutableList<BufferedImage> ): String {
+    var res = BufferedImage(fullWidth,height,BufferedImage.TYPE_INT_RGB)
+    val resGraphics = res.createGraphics()
+    var curWidth = 0
+    for(im in images){
+        resGraphics.drawImage(im,curWidth,0,null)
+        curWidth += im.width
+    }
+    ImageIO.write(res,"PNG",resFile)
+    return "Результат сохранен в ${resFile.absolutePath}\n"
+}
+
+fun saveSeparately(resFile: File, time: Calendar, images: MutableList<BufferedImage>): String{
+    var folder = resFile!!.parent + "/" + resFile!!.nameWithoutExtension
+    var number = 0
+    while (Files.exists(Path(folder))){
+        number++
+        if(number == 1){
+            folder += "($number)"
+        } else {
+            folder = folder.removeSuffix("(${number-1})")
+            folder +="($number)"
+        }
+    }
+    Files.createDirectory(Path(folder))
+    var resFilePattern = "$folder/%s.png"
+    var time = time.clone() as Calendar
+    images.forEachIndexed { index, bufferedImage ->
+        ImageIO.write(bufferedImage,"PNG",
+            File(String.format(resFilePattern,
+                (getHourRoundUp(time)).toString().padStart(2,'0') + '-' +
+                        (getHourRoundUp(time) + 1).toString().padStart(2,'0')
+            )));
+        time.add(Calendar.MINUTE, 90)
+    }
+    return "Результат сохранен в ${folder}\n"
+}
 
 fun paintWhiteRightUpCorner(image: BufferedImage,square_size: Int) {
     val binary = BinaryColorSchemeConverter(200).convert(
