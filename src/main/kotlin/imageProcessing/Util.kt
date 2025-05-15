@@ -16,7 +16,8 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
                             eraseOnEachList: Boolean,
                             onUpdateProgress: (Int) -> Unit,
                             onCloseRequest: () -> Boolean,
-                            onCurrentFileChanged: (String) -> Unit): String {
+                            onCurrentFileChanged: (String) -> Unit,
+                            desiredHeight: Int = 0): String {
     var resMessage = ""
     var resFile: File? = null
     val imagesToConcatenate = mutableListOf<BufferedImage>()
@@ -31,6 +32,7 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
             }
             element.file?.let {
                 resFile = File(it.parent + "/" + it.nameWithoutExtension + ".png")
+                resFile = File(it.parent + "/" + it.nameWithoutExtension + "/")
                 onCurrentFileChanged(it.name)
                 val images = ImageRepository().readAllImages(it)
 
@@ -92,7 +94,12 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
     }
     var fullWidth = 0
     var curWidth = 0
-    var height = if (imagesToConcatenate.size > 0) imagesToConcatenate[0].height else 0
+    var height =
+        if (imagesToConcatenate.size > 0)
+            if (desiredHeight > 0)
+                desiredHeight
+            else imagesToConcatenate[0].height
+        else 0
     for(i in imagesToConcatenate.indices){
         if(onCloseRequest()){
             break
@@ -120,6 +127,7 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
 
     return resMessage
 }
+
 
 fun paintWhiteRightUpCorner(image: BufferedImage,square_size: Int) {
     val binary = BinaryColorSchemeConverter(200).convert(
