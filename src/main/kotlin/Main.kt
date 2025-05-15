@@ -36,7 +36,7 @@ fun App() {
     var cropRegion: CropRegion by remember { mutableStateOf(CropRegion())}
     val returnToStart: () -> Unit = { stage = UIStage.START }
     var eraseHourOnEachList by remember { mutableStateOf(true) }
-
+    var desiredHeight by remember { mutableStateOf(0) }
 
     MaterialTheme {
         Box(modifier = Modifier.padding(12.dp)){
@@ -55,12 +55,14 @@ fun App() {
                         cropRegion
                     },
                     { eraseHourOnEachList = it },
+                    { desiredHeight = it },
                     { stage = UIStage.CROPPING },
                     { returnToStart() }
                 )
                 UIStage.CROPPING -> ProgressScreen(cropRegion!!,
 
                     eraseHourOnEachList,
+                    desiredHeight,
                     { message = it},
                     { stage = UIStage.CROPPING_IS_DONE },
                     { returnToStart() }
