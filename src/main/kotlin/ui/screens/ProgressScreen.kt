@@ -6,9 +6,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import imageProcessing.cropAndConcatManyImages
 import imageProcessing.CropRegion
+import java.util.*
 
 @Composable
-fun ProgressScreen(cropRegion: CropRegion, eraseHourOnEachList: Boolean, desiredHeight: Int, returnMessage: (String) -> Unit, changeState:()-> Unit, returnToStart:()->Unit) {
+fun ProgressScreen(cropRegion: CropRegion, eraseHourOnEachList: Boolean,
+                   desiredHeight: Int, separateLists: Boolean,
+                   time: Calendar, returnMessage: (String) -> Unit, changeState:()-> Unit, returnToStart:()->Unit) {
     var progress by remember { mutableStateOf(0) }
     var closeTask by remember { mutableStateOf(false) }
     var curTask by remember { mutableStateOf("") }
@@ -21,7 +24,9 @@ fun ProgressScreen(cropRegion: CropRegion, eraseHourOnEachList: Boolean, desired
                 { progress = it },
                 { closeTask },
                 { curTask = it},
-                desiredHeight
+                desiredHeight,
+                separateLists,
+                time
             )
             if (!closeTask) {
                 returnMessage(resMessage)
