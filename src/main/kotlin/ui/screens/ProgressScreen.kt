@@ -8,7 +8,7 @@ import imageProcessing.cropAndConcatManyImages
 import imageProcessing.CropRegion
 
 @Composable
-fun ProgressScreen(cropRegion: CropRegion, eraseHourOnEachList: Boolean, returnMessage: (String) -> Unit, changeState:()-> Unit, returnToStart:()->Unit) {
+fun ProgressScreen(cropRegion: CropRegion, eraseHourOnEachList: Boolean, desiredHeight: Int, returnMessage: (String) -> Unit, changeState:()-> Unit, returnToStart:()->Unit) {
     var progress by remember { mutableStateOf(0) }
     var closeTask by remember { mutableStateOf(false) }
     var curTask by remember { mutableStateOf("") }
@@ -20,7 +20,8 @@ fun ProgressScreen(cropRegion: CropRegion, eraseHourOnEachList: Boolean, returnM
                 eraseHourOnEachList,
                 { progress = it },
                 { closeTask },
-                { curTask = it}
+                { curTask = it},
+                desiredHeight
             )
             if (!closeTask) {
                 returnMessage(resMessage)
