@@ -29,6 +29,7 @@ import kotlin.concurrent.thread
 fun CropScreen(
     getSetCropRegion: (CropRegion?) -> CropRegion,
     onEraseHourSet: (Boolean) -> Unit,
+    onDesiredHeightSet: (Int) -> Unit,
     goNext: () -> Unit,
     returnToStart: () -> Unit
 ) {
@@ -40,6 +41,9 @@ fun CropScreen(
     var imagePreview by remember { mutableStateOf(ImageBitmap(0, 0)) }
     //
     var eraseHourOnEachList by remember { mutableStateOf(true) }
+    var heightSet by remember { mutableStateOf(false) }
+    var desiredHeight by remember { mutableStateOf(0) }
+    onDesiredHeightSet(desiredHeight)
     val state = rememberScrollState()
     LaunchedEffect(Unit) {
         state.animateScrollTo(100)
@@ -57,6 +61,19 @@ fun CropScreen(
         }
     }
     Column(Modifier.verticalScroll(state).fillMaxWidth()) {
+        Row {
+            Checkbox(checked = heightSet, onCheckedChange = { heightSet = it; desiredHeight = 0 })
+            Text(
+                "Задать высоту итогового изображения",
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            if (heightSet){
+                TextField(value = desiredHeight.toString(),
+                    onValueChange = { if (checkIsNum(it)) desiredHeight = if (it == "") 0 else it.toInt();
+
+                    })
+            }
+        }
         Column(modifier = Modifier.selectableGroup()) {
             for (i in 0..2) {
                 Row {
