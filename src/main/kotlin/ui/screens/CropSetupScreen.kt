@@ -22,14 +22,19 @@ import imageProcessing.NewCropRegion_
 import imageProcessing.OldCropRegion
 import logic.FileAndDiapasons
 import logic.checkIsNum
+import models.CalendarViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import javax.imageio.ImageIO
 import kotlin.concurrent.thread
 
 @Composable
-fun CropScreen(
+fun CropSetupScreen(
     getSetCropRegion: (CropRegion?) -> CropRegion,
     onEraseHourSet: (Boolean) -> Unit,
     onDesiredHeightSet: (Int) -> Unit,
+    onSeparateListSet: (Boolean) -> Unit,
+    onTimeOnFirstListSet: (Calendar) -> Unit,
     goNext: () -> Unit,
     returnToStart: () -> Unit
 ) {
@@ -43,7 +48,12 @@ fun CropScreen(
     var eraseHourOnEachList by remember { mutableStateOf(true) }
     var heightSet by remember { mutableStateOf(false) }
     var desiredHeight by remember { mutableStateOf(0) }
+    var separateLists by remember { mutableStateOf(false) }
+    onSeparateListSet(separateLists)
+    var model by remember { mutableStateOf(CalendarViewModel()) }
+//    var timeOnFirstList by remember { mutableStateOf(Calendar.Builder().setTimeOfDay(5,30,0).build()) }
     onDesiredHeightSet(desiredHeight)
+    onTimeOnFirstListSet(model.time.collectAsState().value)
     val state = rememberScrollState()
     LaunchedEffect(Unit) {
         state.animateScrollTo(100)
@@ -72,6 +82,32 @@ fun CropScreen(
                     onValueChange = { if (checkIsNum(it)) desiredHeight = if (it == "") 0 else it.toInt();
 
                     })
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = separateLists, onCheckedChange = { separateLists = it; model.setTime(
+                Calendar.Builder().setTimeOfDay(5,30,0).build())
+            })
+            Text(
+                "Сохранить листы отдельно",
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            if (separateLists){
+                Button(onClick = {
+                    val newTime = model.time.value.clone() as Calendar
+                    newTime.add(Calendar.MINUTE, -90)
+                    model.setTime(newTime)
+                }){
+                    Text("<<")
+                }
+                Text(SimpleDateFormat("HH:mm").format(model.time.collectAsState().value.time))
+                Button(onClick = {
+                    val newTime = model.time.value.clone() as Calendar
+                    newTime.add(Calendar.MINUTE, 90)
+                    model.setTime(newTime)
+                }){
+                    Text(">>")
+                }
             }
         }
         Column(modifier = Modifier.selectableGroup()) {
