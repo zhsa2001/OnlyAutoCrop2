@@ -31,8 +31,10 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
                 break
             }
             element.file?.let {
-                resFile = File(it.parent + "/" + it.nameWithoutExtension + ".png")
-                resFile = File(it.parent + "/" + it.nameWithoutExtension + "/")
+                if(resFile == null){
+                    resFile = File(it.parent + "/" + it.nameWithoutExtension + ".png")
+                    resFile = File(it.parent + "/" + it.nameWithoutExtension + "/")
+                }
                 onCurrentFileChanged(it.name)
                 val images = ImageRepository().readAllImages(it)
 
