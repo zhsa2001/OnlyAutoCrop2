@@ -4,10 +4,21 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.ColorConvertOp
 
+/**
+ * Интерфейс для цветового преобразования изображения
+ */
 interface ColorSchemeConverter {
-    abstract fun convert(image: BufferedImage): BufferedImage
+    /**
+     * Преобразует цвета изображения
+     * @param image исходное изображение
+     * @return преобразованное изображение
+     */
+    fun convert(image: BufferedImage): BufferedImage
 }
 
+/**
+ * Преобразователь цветных изображений в изображения в оттенках серого
+ */
 class GrayColorSchemeConverter: ColorSchemeConverter {
     override fun convert(image: BufferedImage): BufferedImage {
         val gray = BufferedImage(image.width,image.height, BufferedImage.TYPE_BYTE_GRAY)
@@ -17,6 +28,9 @@ class GrayColorSchemeConverter: ColorSchemeConverter {
     }
 }
 
+/**
+ * Преобразователь изображений в оттенках серого в черно-белые изображения
+ */
 class BinaryColorSchemeConverter(val threshold: Int): ColorSchemeConverter {
     override fun convert(image: BufferedImage): BufferedImage {
             val image = image
@@ -35,5 +49,4 @@ class BinaryColorSchemeConverter(val threshold: Int): ColorSchemeConverter {
             }
         return image
     }
-
 }

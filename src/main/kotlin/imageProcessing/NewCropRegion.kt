@@ -4,13 +4,16 @@ import java.awt.Point
 import java.awt.image.BufferedImage
 import kotlin.math.max
 
-class NewCropRegion_: CropRegion() {
+/**
+ * Наследник CropRegion для работы с файлами графиков из новой программы
+ */
+class NewCropRegion: CropRegion() {
     override fun autoDetect(image: BufferedImage?) {
         if(image != null){
             var cornerLeft = Point()
             var cornerRight = Point()
-            setRightCorner(image, cornerRight, square_size)
-            setLeftDownCorner(image, cornerLeft, square_size)
+            setRightCorner(image, cornerRight, squareSize)
+            setLeftDownCorner(image, cornerLeft, squareSize)
             x = cornerLeft.x
             y = cornerRight.y
             w = cornerRight.x - x

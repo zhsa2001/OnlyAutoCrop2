@@ -4,7 +4,15 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
+/**
+ * Предоставляет список изображений из файла tiff
+ */
 class ImageRepository {
+    /**
+     * Получает все изображения из файла tiff
+     * @param file имя tif файла
+     * @return список изоражений из файла
+     */
     fun readAllImages(file: File):MutableList<BufferedImage>{
         val stream = ImageIO.createImageInputStream(file)
         val images = mutableListOf<BufferedImage>()

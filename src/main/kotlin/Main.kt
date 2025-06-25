@@ -12,7 +12,7 @@ import imageProcessing.CropRegion
 import logic.FileAndDiapasons
 import ui.UIStage
 import ui.screens.CropSetupScreen
-import ui.screens.ManyFilesScreen
+import ui.screens.OriginalFilesScreen
 import ui.screens.ProgressScreen
 import ui.screens.ResultOfCropping
 import java.io.File
@@ -22,19 +22,26 @@ fun main() = application {
     val width = 500.dp
     val height = 600.dp
     val AppIcon = painterResource("icon.png")
-    Window(onCloseRequest = ::exitApplication,title = "Соединение tif в png", icon = AppIcon, state = WindowState(width = width, height = height)) {
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "Соединение tif в png",
+        icon = AppIcon,
+        state = WindowState(width = width, height = height)
+    ) {
         App()
     }
 }
 
 
-
+/**
+ * Приложение
+ */
 @Composable
 fun App() {
     var stage by remember { mutableStateOf(UIStage.START) }
     var path by remember { mutableStateOf<File?>(null) }
     var message by remember { mutableStateOf("") }
-    var cropRegion: CropRegion by remember { mutableStateOf(CropRegion())}
+    var cropRegion: CropRegion by remember { mutableStateOf(CropRegion()) }
     val returnToStart: () -> Unit = { stage = UIStage.START }
     var eraseHourOnEachList by remember { mutableStateOf(true) }
     var desiredHeight by remember { mutableStateOf(0) }
@@ -42,11 +49,12 @@ fun App() {
     var separateLists by remember { mutableStateOf(false) }
 
     MaterialTheme {
-        Box(modifier = Modifier.padding(12.dp)){
-            when(stage){
-                UIStage.START -> ManyFilesScreen({ stage = UIStage.FILE_CHOOSEN },
+        Box(modifier = Modifier.padding(12.dp)) {
+            when (stage) {
+                UIStage.START -> OriginalFilesScreen(
+                    { stage = UIStage.FILE_CHOOSEN },
                     {
-                        it?.let{
+                        it?.let {
                             path = it
                         }
                         path
@@ -62,22 +70,22 @@ fun App() {
                     { separateLists = it },
                     { timeOnFirstList = it },
                     { stage = UIStage.CROPPING },
-                    { returnToStart() }
+                    returnToStart
                 )
-                UIStage.CROPPING -> ProgressScreen(cropRegion!!,
 
+                UIStage.CROPPING -> ProgressScreen(
+                    cropRegion,
                     eraseHourOnEachList,
                     desiredHeight,
                     separateLists,
                     timeOnFirstList,
-                    { message = it},
+                    { message = it },
                     { stage = UIStage.CROPPING_IS_DONE },
-                    { returnToStart() }
+                    returnToStart
                 )
+
                 UIStage.CROPPING_IS_DONE -> {
-                    ResultOfCropping(message,
-                        { returnToStart() }
-                    )
+                    ResultOfCropping(message, returnToStart)
                     FileAndDiapasons.clear()
                 }
             }

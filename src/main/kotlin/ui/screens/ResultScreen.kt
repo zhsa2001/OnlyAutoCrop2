@@ -9,21 +9,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 
-
+/**
+ * Экран с результатом
+ * @param message сообщение с резульатом
+ * @param returnToStart функция возвращения к началу действий
+ */
 @Composable
 fun ResultOfCropping(message: String, returnToStart:()->Unit){
+    val returnToStartText = "Вернуться в начало"
     Column {
         Column{
-            Button(onClick = {
-                returnToStart()
-            }
-            ) {
-                Text("Вернуться в начало")
+            Button(onClick = returnToStart) {
+                Text(returnToStartText)
             }
         }
         Column{
             val state = rememberScrollState()
-            LaunchedEffect(Unit) { state.animateScrollTo(100) }
             Text(message, Modifier.verticalScroll(state))
         }
     }

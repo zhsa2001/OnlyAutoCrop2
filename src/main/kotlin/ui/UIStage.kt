@@ -1,5 +1,26 @@
 package ui
 
+/**
+ * Этапы работы, определяющие текущий показываемый экран
+ */
 enum class UIStage {
-    START, FILE_CHOOSEN, CROPPING, CROPPING_IS_DONE
+    /**
+     * Начало
+     */
+    START,
+
+    /**
+     * Файлы выбраны, настраиваются параметры
+     */
+    FILE_CHOOSEN,
+
+    /**
+     * Выполнение операций над изображениями
+     */
+    CROPPING,
+
+    /**
+     * Завершение обработки
+     */
+    CROPPING_IS_DONE
 }

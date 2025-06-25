@@ -13,8 +13,22 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Граничное значение для бинаризации изображения
+ */
 val threshold = 210
 
+/**
+ * Вырезает определенные листы из файлов FileAndDiapasons и сохраняет изображение-результат
+ * @param cropRegion регион для обрезки файла
+ * @param eraseOnEachList закрашивать или нет верхний правый угол (где дублируется час)
+ * @param onCloseRequest для обновления процента выполнения по текущему файлу
+ * @param onCurrentFileChanged для обновления названия обрабатываемого файла
+ * @param desiredHeight высота итогового изображения. Если 0, то высота не изменяется
+ * @param separateLists сохранить каждый лист отдельно или объединить в одно изображение
+ * @param time время на первом листе
+ * @return строку с сообщением о результате обработки файлов
+ */
 fun cropAndConcatManyImages(cropRegion: CropRegion,
                             eraseOnEachList: Boolean,
                             onUpdateProgress: (Int) -> Unit,
@@ -38,7 +52,6 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
             element.file?.let {
                 if(resFile == null){
                     resFile = File(it.parent + "/" + it.nameWithoutExtension + ".png")
-//                    resFile = File(it.parent + "/" + it.nameWithoutExtension + "/")
                 }
                 onCurrentFileChanged(it.name)
                 val images = ImageRepository().readAllImages(it)
@@ -52,6 +65,8 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
                 var start = 0
                 var end = imagesSize
                 onUpdateProgress(progress)
+
+                // определяется диапазон листов
                 element.start?.let {
                     start = max(min(imagesSize,element.start!!) - 1,0)
                     imagesSize -= start
@@ -60,7 +75,7 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
                     end = min(max(element.end!!,start+1), images.size)
                     imagesSize -= (images.size - end)
                 }
-                var step = (100 - 20) / imagesSize
+                var step = (100 - progress) / imagesSize
 
                 val x = cropRegion.x
                 val y = cropRegion.y
@@ -68,14 +83,17 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
                 val w = cropRegion.w
                 val h = cropRegion.h
                 val imagesCropped = mutableListOf<BufferedImage>()
+                // заполняется список с обрезанными изображениями
                 for(i in start..<end){
                     if(onCloseRequest()){
                         break
                     }
                     imagesCropped.add(images[i].getSubimage(x,y,w,h))
                     if (eraseOnEachList){
-                        paintWhiteRightUpCorner(imagesCropped.last(), square_size = 40)
+                        paintWhiteRightUpCorner(imagesCropped.last(), squareSize = 40)
                     }
+                    progress += step
+                    onUpdateProgress(progress)
                 }
                 imagesToConcatenate.addAll(imagesCropped)
             }
@@ -83,13 +101,17 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
             resMessage += "Ошибка обработки файла ${element.file!!.absolutePath}: ${e.message}\n"
         }
     }
-    var fullWidth = 0
+
     var height =
         if (imagesToConcatenate.size > 0)
             if (desiredHeight > 0)
                 desiredHeight
             else imagesToConcatenate[0].height
         else 0
+    onCurrentFileChanged("итоговый файл")
+    onUpdateProgress(0)
+    var fullWidth = 0
+    // изображения масштабируются по высоте
     for(i in imagesToConcatenate.indices){
         if(onCloseRequest()){
             break
@@ -101,8 +123,11 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
         graphics.drawImage(imagesToConcatenate[i].getScaledInstance(width,height, Image.SCALE_SMOOTH),0,0,null)
         imagesToConcatenate[i] = im
         fullWidth += imagesToConcatenate[i].width
+
+        onUpdateProgress(100 * (i + 1) / imagesToConcatenate.size)
     }
     if(!onCloseRequest() && fullWidth > 0 && height > 0){
+        // изображения сохраняются
         if(separateLists){
             resFile?.let {
                 resMessage += saveSeparately(resFile!!, time, imagesToConcatenate)
@@ -112,22 +137,34 @@ fun cropAndConcatManyImages(cropRegion: CropRegion,
                 resMessage += saveFullImage(resFile!!, fullWidth, height, imagesToConcatenate)
             }
         }
-
     }
-
     return resMessage
 }
 
+/**
+ * Округляет час
+ * @param time время для округления
+ * @return округленный до большего час
+ */
 fun getHourRoundUp(time: Calendar): Int{
-    var time = time.clone() as Calendar
+    val time = time.clone() as Calendar
     time.add(Calendar.MINUTE, 59)
     return time.get(Calendar.HOUR_OF_DAY)
 }
 
+/**
+ * Сохраняет объединенным изображением список листов графика
+ * @param resFile файл, по названию которого определяется название сохраняемого файла
+ * @param fullWidth ширина итогового изображения
+ * @param height высота итогового изображения
+ * @param images список изображений-листов для сохранения
+ * @return строку с информацией о том, куда сохранен файл
+ */
 fun saveFullImage(resFile: File, fullWidth: Int, height: Int, images: MutableList<BufferedImage> ): String {
     var res = BufferedImage(fullWidth,height,BufferedImage.TYPE_INT_RGB)
     val resGraphics = res.createGraphics()
     var curWidth = 0
+    // отрисовка каждого изображения на итоговом
     for(im in images){
         resGraphics.drawImage(im,curWidth,0,null)
         curWidth += im.width
@@ -136,9 +173,18 @@ fun saveFullImage(resFile: File, fullWidth: Int, height: Int, images: MutableLis
     return "Результат сохранен в ${resFile.absolutePath}\n"
 }
 
+/**
+ * Сохраняет отдельными файлами список листов графика
+ * @param resFile файл, по названию которого создается новая директория для сохранения файлов
+ * @param time время на первом листе для именования файлов-листов
+ * @param images список изображений-листов для сохранения
+ * @return строку с информацией о том, куда сохранены файлы
+ */
 fun saveSeparately(resFile: File, time: Calendar, images: MutableList<BufferedImage>): String{
-    var folder = resFile!!.parent + "/" + resFile!!.nameWithoutExtension
+    // название папки для сохранения файлов
+    var folder = resFile.parent + "/" + resFile.nameWithoutExtension
     var number = 0
+    // определение еще не существующей папки с таким названием и индексом для сохранения
     while (Files.exists(Path(folder))){
         number++
         if(number == 1){
@@ -149,6 +195,7 @@ fun saveSeparately(resFile: File, time: Calendar, images: MutableList<BufferedIm
         }
     }
     Files.createDirectory(Path(folder))
+    // сохранение листов с диапазоном часов в названии документа
     var resFilePattern = "$folder/%s.png"
     var time = time.clone() as Calendar
     images.forEachIndexed { index, bufferedImage ->
@@ -162,21 +209,36 @@ fun saveSeparately(resFile: File, time: Calendar, images: MutableList<BufferedIm
     return "Результат сохранен в ${folder}\n"
 }
 
-fun paintWhiteRightUpCorner(image: BufferedImage,square_size: Int) {
-    val binary = BinaryColorSchemeConverter(200).convert(
+/**
+ * Закрашивает белым угол справа сверху
+ * @param image изменяемое изображение
+ * @param squareSize сторона квадрата для анализа области
+ * @param widthOfFilledRect ширина закрашиваемой области
+ */
+fun paintWhiteRightUpCorner(image: BufferedImage, squareSize: Int, widthOfFilledRect: Int = 60) {
+    val binary = BinaryColorSchemeConverter(threshold).convert(
         GrayColorSchemeConverter().convert(image)
     )
-    for(i in square_size/2..<image.height-square_size){
-        val line = findHorizontalLine(binary,image.width-square_size-1,i,square_size)
-        if (line.size == 2 && abs(line[0].x - line[1].x) > square_size - 2){
+    // определение высоты закрашиваемой области по горизонтальной линии минут
+    for(i in squareSize/2..<image.height-squareSize){
+        val line = findHorizontalLine(binary,image.width-squareSize-1,i,squareSize)
+        if (line.size == 2 && abs(line[0].x - line[1].x) > squareSize - 2){
             val draw = image.createGraphics()
             draw.color = Color.WHITE
-            draw.fillRect(image.width - 60, 2,60,line[0].y - 2)
+            draw.fillRect(image.width - widthOfFilledRect, 2,widthOfFilledRect,line[0].y - 2)
             break
         }
     }
 }
 
+/**
+ * Находит в области угол в виде повернутой по часовой на 90 градусов буквы Т
+ * @param image черно-белое изображение для анализа
+ * @param x координата верхнего левого угла области
+ * @param y координата верхнего левого угла области
+ * @param squareSize сторона квадратной области для анализа
+ * @return координату угла, если он найден, иначе null
+ */
 fun checkT90(image: BufferedImage, x: Int, y: Int, squareSize: Int): Point? {
     var corner: Point? = null
     val verticalLine = findVerticalLine(image,x,y,squareSize)
@@ -189,22 +251,27 @@ fun checkT90(image: BufferedImage, x: Int, y: Int, squareSize: Int): Point? {
     return corner
 }
 
-fun setRightCorner(image: BufferedImage, cornerRight: Point, square_size: Int){
+/**
+ * Устанавливает черно-белое правый верхний внутренний угол рамки листов графика
+ * @param image изображение для анализа
+ * @param cornerRight устанавливаемый угол
+ * @param squareSize сторона квадратной области для анализа
+ */
+fun setRightCorner(image: BufferedImage, cornerRight: Point, squareSize: Int){
     val raster = image.raster
     var pixel = IntArray(4)
     var find = false
     var x1 = 0
     var y1 = 0
-    for (i in 0..<image.height-square_size/2){
-        for (j in image.width-1 downTo square_size/2){
+    for (i in 0..<image.height-squareSize/2){
+        // обход справа налево сверху вниз для нахождения вертикальной линии
+        for (j in image.width-1 downTo squareSize/2){
             raster.getPixel(j,i,pixel)
             if(pixel[0] == 0){
-
-                val line = findVerticalLine(image,j - 2,i + square_size/2,square_size)
-
-                if (line.size == 2 && abs(line[0].y - line[1].y) > (square_size - 2)){
+                val line = findVerticalLine(image,j - 2,i + squareSize/2,squareSize)
+                if (line.size == 2 && abs(line[0].y - line[1].y) > (squareSize - 2)){
                     find = true
-                    x1  = line[0].x - square_size/2
+                    x1  = line[0].x - squareSize/2
                     y1 = line[0].y
                     break
                 }
@@ -214,8 +281,9 @@ fun setRightCorner(image: BufferedImage, cornerRight: Point, square_size: Int){
             break
         }
     }
-    for(i in y1..<image.height-square_size){
-        val corner = checkT90(image,x1,i,square_size)
+    for(i in y1..<image.height-squareSize){
+        // обход сверху вниз для определения угла в виде Т, повернутой на 90 градусов по часовой
+        val corner = checkT90(image,x1,i,squareSize)
         if(corner != null){
             cornerRight.x = corner.x
             cornerRight.y = corner.y
@@ -224,27 +292,36 @@ fun setRightCorner(image: BufferedImage, cornerRight: Point, square_size: Int){
     }
 }
 
-fun setLeftDownCorner(image: BufferedImage, cornerLeft: Point, square_size: Int){
+/**
+ * Устанавливает левый нижний внутренний угол рамки листов графика
+ * @param image черно-белое изображение для анализа
+ * @param cornerLeft устанавливаемый угол
+ * @param squareSize сторона квадратной области для анализа
+ */
+fun setLeftDownCorner(image: BufferedImage, cornerLeft: Point, squareSize: Int){
     val raster = image.raster
     var find = false
     var x1 = 0
     var y1 = 0
     var yStart = image.height-1
-    while(!find && yStart > square_size){
+
+    while(!find && yStart > squareSize){
+        // обход снизу вверх для нахождения нижней горизонтальной линии
         for(i in yStart downTo 0){
             val pixel = IntArray(4)
             raster.getPixel(image.width/2,i,pixel)
             if(pixel[0] == 0){
-                val line = findHorizontalLine(image,image.width/2,i,square_size)
-                if(line.size == 2 && abs(line[0].x - line[1].x) > square_size - 2){
-                    y1 = i - square_size/2
+                val line = findHorizontalLine(image,image.width/2,i,squareSize)
+                if(line.size == 2 && abs(line[0].x - line[1].x) > squareSize - 2){
+                    y1 = i - squareSize/2
                     x1 = image.width/2
                     break
                 }
             }
         }
+        // обход справа налево для нахождения внутреннего левого нижнего угла рамки
         for(j in x1 downTo 0){
-            val corner = checkT180(image,j,y1,square_size)
+            val corner = checkT180(image,j,y1,squareSize)
             if(corner != null){
                 cornerLeft.x = corner.x
                 cornerLeft.y = corner.y
@@ -255,14 +332,22 @@ fun setLeftDownCorner(image: BufferedImage, cornerLeft: Point, square_size: Int)
     }
 }
 
-fun setLeftUpCorner(image: BufferedImage, cornerLeft: Point, cornerLeftBotom: Point, cornerRight: Point, square_size: Int){
+/**
+ * Устанавливает левый верхний внутренний угол рамки листов графика, учитывая отступ, имеющийся на графиках из старой программы
+ * @param image черно-белое изображение для анализа
+ * @param cornerLeft устанавливаемый угол
+ * @param cornerLeftBotom нижний левый внутренний угол рамки
+ * @param cornerRight правый верхний внутренний угол рамки
+ * @param squareSize сторона квадратной области для анализа
+ */
+fun setLeftUpCorner(image: BufferedImage, cornerLeft: Point, cornerLeftBotom: Point, cornerRight: Point, squareSize: Int){
     var find = false
-    for(j in cornerLeftBotom.x+2..<image.width-square_size){
-        for(i in cornerRight.y+2..<image.height-square_size) {
+    for(j in cornerLeftBotom.x+2..<image.width-squareSize){
+        for(i in cornerRight.y+2..<image.height-squareSize) {
+            // обход снизу вверх слева направо для нахождения верикальной линии
+            val line = findVerticalLine(image,j,i,squareSize)
 
-            var line = findVerticalLine(image,j,i,square_size)
-
-            if(line.size == 2 && abs(line[0].y - line[1].y) > square_size - 2){
+            if(line.size == 2 && abs(line[0].y - line[1].y) > squareSize - 2){
                 cornerLeft.x = line[0].x
                 cornerLeft.y = line[0].y
                 find = true
@@ -270,7 +355,6 @@ fun setLeftUpCorner(image: BufferedImage, cornerLeft: Point, cornerLeftBotom: Po
             if(find){
                 break
             }
-
         }
         if(find){
             break
@@ -279,6 +363,14 @@ fun setLeftUpCorner(image: BufferedImage, cornerLeft: Point, cornerLeftBotom: Po
     return
 }
 
+/**
+ * Определяет в квадратной области черно-белого изображения координаты угла, который выглядит, как перевернутая на 180 градусов Т
+ * @param image изображение для анализа
+ * @param x координата верхнего угла квадратной области BufferedImage
+ * @param y координата верхнего угла квадратной области BufferedImage
+ * @param squareSize сторона квадратной области для анализа
+ * @return координату угла, если он найден, иначе null
+ */
 fun checkT180(image: BufferedImage, x: Int, y: Int, squareSize: Int): Point? {
     var corner: Point? = null
     val verticalLine = findVerticalLine(image,x,y,squareSize)
@@ -291,16 +383,25 @@ fun checkT180(image: BufferedImage, x: Int, y: Int, squareSize: Int): Point? {
     return corner
 }
 
-fun findHorizontalLine(image: BufferedImage,x: Int,y: Int,square_size: Int): List<Point>{
+/**
+ * Определяет в квадратной области черно-белого изображения горизонтальную линию, начинающуюся на ширине x,
+ * обходя слева направо, сверху вниз
+ * @param image изображение для анализа
+ * @param x координата верхнего угла квадратной области BufferedImage
+ * @param y координата верхнего угла квадратной области BufferedImage
+ * @param squareSize сторона квадратной области для анализа
+ * @return массив из двух точек или пустой массив, если линия не найдена
+ */
+fun findHorizontalLine(image: BufferedImage, x: Int, y: Int, squareSize: Int): List<Point>{
     var lineStart: Point? = null
     var lineEnd: Point? = null
     val raster = image.raster
     var pixel = IntArray(4)
-    for(i in 0..<square_size){
+    for(i in 0..<squareSize){
         raster.getPixel(x,y+i,pixel)
         if(pixel[0] == 0){
             lineStart = Point(x,y+i)
-            for(j in 0..<square_size){
+            for(j in 0..<squareSize){
                 raster.getPixel(x+j,y+i,pixel)
                 if(pixel[0] != 0){
                     lineEnd = Point(x+j-1,y+i)
@@ -308,7 +409,7 @@ fun findHorizontalLine(image: BufferedImage,x: Int,y: Int,square_size: Int): Lis
                 }
             }
             if(lineEnd == null){
-                lineEnd = Point(x+square_size-1,y+i)
+                lineEnd = Point(x+squareSize-1,y+i)
             }
         }
         if(lineEnd != null){
@@ -323,16 +424,25 @@ fun findHorizontalLine(image: BufferedImage,x: Int,y: Int,square_size: Int): Lis
     return line
 }
 
-fun findVerticalLine(image: BufferedImage,x: Int,y: Int,square_size: Int): List<Point>{
+/**
+ * Определяет в квадратной области черно-белого изображения вертикальную линию, начинающуюся на высоте y,
+ * обходя слева направо, сверху вниз
+ * @param image изображение для анализа
+ * @param x координата верхнего угла квадратной области BufferedImage
+ * @param y координата верхнего угла квадратной области BufferedImage
+ * @param squareSize сторона квадратной области для анализа
+ * @return массив из двух точек или пустой массив, если линия не найдена
+ */
+fun findVerticalLine(image: BufferedImage, x: Int, y: Int, squareSize: Int): List<Point> {
     var lineStart: Point? = null
     var lineEnd: Point? = null
     val raster = image.raster
     var pixel = IntArray(4)
-    for(j in 0..<square_size){
+    for(j in 0..<squareSize){
         raster.getPixel(x+j,y,pixel)
         if(pixel[0] == 0){
             lineStart = Point(x+j,y)
-            for(i in 0..<square_size){
+            for(i in 0..<squareSize){
                 raster.getPixel(x+j,y+i,pixel)
                 if(pixel[0] != 0){
                     lineEnd = Point(x+j,y+i-1)
@@ -340,7 +450,7 @@ fun findVerticalLine(image: BufferedImage,x: Int,y: Int,square_size: Int): List<
                 }
             }
             if(lineEnd == null){
-                lineEnd = Point(x+j,y+square_size-1)
+                lineEnd = Point(x+j,y+squareSize-1)
             }
         }
         if(lineEnd != null){
