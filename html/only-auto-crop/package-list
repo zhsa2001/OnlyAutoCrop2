@@ -1,0 +1,82 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:////PointingToDeclaration/only-auto-crop/[root]/index.html
+$dokka.location://App/#/PointingToDeclaration/only-auto-crop/[root]/-app.html
+$dokka.location://main/#/PointingToDeclaration/only-auto-crop/[root]/main.html
+$dokka.location:imageProcessing////PointingToDeclaration/only-auto-crop/imageProcessing/index.html
+$dokka.location:imageProcessing//checkT180/#java.awt.image.BufferedImage#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/check-t180.html
+$dokka.location:imageProcessing//checkT90/#java.awt.image.BufferedImage#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/check-t90.html
+$dokka.location:imageProcessing//cropAndConcatManyImages/#imageProcessing.CropRegion#kotlin.Boolean#kotlin.Function1[kotlin.Int,kotlin.Unit]#kotlin.Function0[kotlin.Boolean]#kotlin.Function1[kotlin.String,kotlin.Unit]#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/crop-and-concat-many-images.html
+$dokka.location:imageProcessing//findHorizontalLine/#java.awt.image.BufferedImage#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/find-horizontal-line.html
+$dokka.location:imageProcessing//findVerticalLine/#java.awt.image.BufferedImage#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/find-vertical-line.html
+$dokka.location:imageProcessing//paintWhiteRightUpCorner/#java.awt.image.BufferedImage#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/paint-white-right-up-corner.html
+$dokka.location:imageProcessing//setLeftDownCorner/#java.awt.image.BufferedImage#java.awt.Point#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/set-left-down-corner.html
+$dokka.location:imageProcessing//setLeftUpCorner/#java.awt.image.BufferedImage#java.awt.Point#java.awt.Point#java.awt.Point#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/set-left-up-corner.html
+$dokka.location:imageProcessing//setRightCorner/#java.awt.image.BufferedImage#java.awt.Point#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/set-right-corner.html
+$dokka.location:imageProcessing//threshold/#/PointingToDeclaration/only-auto-crop/imageProcessing/threshold.html
+$dokka.location:imageProcessing/BinaryColorSchemeConverter///PointingToDeclaration/only-auto-crop/imageProcessing/-binary-color-scheme-converter/index.html
+$dokka.location:imageProcessing/BinaryColorSchemeConverter/BinaryColorSchemeConverter/#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/-binary-color-scheme-converter/-binary-color-scheme-converter.html
+$dokka.location:imageProcessing/BinaryColorSchemeConverter/convert/#java.awt.image.BufferedImage/PointingToDeclaration/only-auto-crop/imageProcessing/-binary-color-scheme-converter/convert.html
+$dokka.location:imageProcessing/BinaryColorSchemeConverter/threshold/#/PointingToDeclaration/only-auto-crop/imageProcessing/-binary-color-scheme-converter/threshold.html
+$dokka.location:imageProcessing/ColorSchemeConverter///PointingToDeclaration/only-auto-crop/imageProcessing/-color-scheme-converter/index.html
+$dokka.location:imageProcessing/ColorSchemeConverter/convert/#java.awt.image.BufferedImage/PointingToDeclaration/only-auto-crop/imageProcessing/-color-scheme-converter/convert.html
+$dokka.location:imageProcessing/CropRegion///PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/index.html
+$dokka.location:imageProcessing/CropRegion/CropRegion/#/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/-crop-region.html
+$dokka.location:imageProcessing/CropRegion/CropRegion/#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/-crop-region.html
+$dokka.location:imageProcessing/CropRegion/autoDetect/#java.awt.image.BufferedImage?/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/auto-detect.html
+$dokka.location:imageProcessing/CropRegion/h/#/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/h.html
+$dokka.location:imageProcessing/CropRegion/isSet/#/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/is-set.html
+$dokka.location:imageProcessing/CropRegion/square_size/#/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/square_size.html
+$dokka.location:imageProcessing/CropRegion/w/#/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/w.html
+$dokka.location:imageProcessing/CropRegion/x/#/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/x.html
+$dokka.location:imageProcessing/CropRegion/y/#/PointingToDeclaration/only-auto-crop/imageProcessing/-crop-region/y.html
+$dokka.location:imageProcessing/GrayColorSchemeConverter///PointingToDeclaration/only-auto-crop/imageProcessing/-gray-color-scheme-converter/index.html
+$dokka.location:imageProcessing/GrayColorSchemeConverter/GrayColorSchemeConverter/#/PointingToDeclaration/only-auto-crop/imageProcessing/-gray-color-scheme-converter/-gray-color-scheme-converter.html
+$dokka.location:imageProcessing/GrayColorSchemeConverter/convert/#java.awt.image.BufferedImage/PointingToDeclaration/only-auto-crop/imageProcessing/-gray-color-scheme-converter/convert.html
+$dokka.location:imageProcessing/ImageRepository///PointingToDeclaration/only-auto-crop/imageProcessing/-image-repository/index.html
+$dokka.location:imageProcessing/ImageRepository/ImageRepository/#/PointingToDeclaration/only-auto-crop/imageProcessing/-image-repository/-image-repository.html
+$dokka.location:imageProcessing/ImageRepository/readAllImages/#java.io.File/PointingToDeclaration/only-auto-crop/imageProcessing/-image-repository/read-all-images.html
+$dokka.location:imageProcessing/NewCropRegion_///PointingToDeclaration/only-auto-crop/imageProcessing/-new-crop-region_/index.html
+$dokka.location:imageProcessing/NewCropRegion_/NewCropRegion_/#/PointingToDeclaration/only-auto-crop/imageProcessing/-new-crop-region_/-new-crop-region_.html
+$dokka.location:imageProcessing/NewCropRegion_/autoDetect/#java.awt.image.BufferedImage?/PointingToDeclaration/only-auto-crop/imageProcessing/-new-crop-region_/auto-detect.html
+$dokka.location:imageProcessing/OldCropRegion///PointingToDeclaration/only-auto-crop/imageProcessing/-old-crop-region/index.html
+$dokka.location:imageProcessing/OldCropRegion/OldCropRegion/#/PointingToDeclaration/only-auto-crop/imageProcessing/-old-crop-region/-old-crop-region.html
+$dokka.location:imageProcessing/OldCropRegion/autoDetect/#java.awt.image.BufferedImage?/PointingToDeclaration/only-auto-crop/imageProcessing/-old-crop-region/auto-detect.html
+$dokka.location:logic////PointingToDeclaration/only-auto-crop/logic/index.html
+$dokka.location:logic//checkIsNum/#kotlin.String/PointingToDeclaration/only-auto-crop/logic/check-is-num.html
+$dokka.location:logic/FileAndDiapason///PointingToDeclaration/only-auto-crop/logic/-file-and-diapason/index.html
+$dokka.location:logic/FileAndDiapason/FileAndDiapason/#java.io.File?#kotlin.Int?#kotlin.Int?/PointingToDeclaration/only-auto-crop/logic/-file-and-diapason/-file-and-diapason.html
+$dokka.location:logic/FileAndDiapason/end/#/PointingToDeclaration/only-auto-crop/logic/-file-and-diapason/end.html
+$dokka.location:logic/FileAndDiapason/file/#/PointingToDeclaration/only-auto-crop/logic/-file-and-diapason/file.html
+$dokka.location:logic/FileAndDiapason/start/#/PointingToDeclaration/only-auto-crop/logic/-file-and-diapason/start.html
+$dokka.location:logic/FileAndDiapasons///PointingToDeclaration/only-auto-crop/logic/-file-and-diapasons/index.html
+$dokka.location:logic/FileAndDiapasons/clear/#/PointingToDeclaration/only-auto-crop/logic/-file-and-diapasons/clear.html
+$dokka.location:logic/FileAndDiapasons/files/#/PointingToDeclaration/only-auto-crop/logic/-file-and-diapasons/files.html
+$dokka.location:logic/FileAndDiapasons/update/#kotlin.Int#java.io.File?/PointingToDeclaration/only-auto-crop/logic/-file-and-diapasons/update.html
+$dokka.location:ui.fileChoose////PointingToDeclaration/only-auto-crop/ui.fileChoose/index.html
+$dokka.location:ui.fileChoose/TifFileChooser///PointingToDeclaration/only-auto-crop/ui.fileChoose/-tif-file-chooser/index.html
+$dokka.location:ui.fileChoose/TifFileChooser/TifFileChooser/#java.io.File?/PointingToDeclaration/only-auto-crop/ui.fileChoose/-tif-file-chooser/-tif-file-chooser.html
+$dokka.location:ui.fileChoose/TiffFilter///PointingToDeclaration/only-auto-crop/ui.fileChoose/-tiff-filter/index.html
+$dokka.location:ui.fileChoose/TiffFilter/TiffFilter/#/PointingToDeclaration/only-auto-crop/ui.fileChoose/-tiff-filter/-tiff-filter.html
+$dokka.location:ui.fileChoose/TiffFilter/accept/#java.io.File?/PointingToDeclaration/only-auto-crop/ui.fileChoose/-tiff-filter/accept.html
+$dokka.location:ui.fileChoose/TiffFilter/getDescription/#/PointingToDeclaration/only-auto-crop/ui.fileChoose/-tiff-filter/get-description.html
+$dokka.location:ui.screens////PointingToDeclaration/only-auto-crop/ui.screens/index.html
+$dokka.location:ui.screens//CropScreen/#kotlin.Function1[imageProcessing.CropRegion?,imageProcessing.CropRegion]#kotlin.Function1[kotlin.Boolean,kotlin.Unit]#kotlin.Function1[kotlin.Int,kotlin.Unit]#kotlin.Function0[kotlin.Unit]#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/only-auto-crop/ui.screens/-crop-screen.html
+$dokka.location:ui.screens//ManyFilesScreen/#kotlin.Function0[kotlin.Unit]#kotlin.Function1[java.io.File?,java.io.File?]/PointingToDeclaration/only-auto-crop/ui.screens/-many-files-screen.html
+$dokka.location:ui.screens//ProgressScreen/#imageProcessing.CropRegion#kotlin.Boolean#kotlin.Int#kotlin.Function1[kotlin.String,kotlin.Unit]#kotlin.Function0[kotlin.Unit]#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/only-auto-crop/ui.screens/-progress-screen.html
+$dokka.location:ui.screens//ResultOfCropping/#kotlin.String#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/only-auto-crop/ui.screens/-result-of-cropping.html
+$dokka.location:ui////PointingToDeclaration/only-auto-crop/ui/index.html
+$dokka.location:ui//getFileFromChooseDialog/#java.io.File?/PointingToDeclaration/only-auto-crop/ui/get-file-from-choose-dialog.html
+$dokka.location:ui/UIStage.CROPPING///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}only-auto-crop/ui/-u-i-stage/-c-r-o-p-p-i-n-g/index.html
+$dokka.location:ui/UIStage.CROPPING_IS_DONE///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}only-auto-crop/ui/-u-i-stage/-c-r-o-p-p-i-n-g_-i-s_-d-o-n-e/index.html
+$dokka.location:ui/UIStage.FILE_CHOOSEN///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}only-auto-crop/ui/-u-i-stage/-f-i-l-e_-c-h-o-o-s-e-n/index.html
+$dokka.location:ui/UIStage.START///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}only-auto-crop/ui/-u-i-stage/-s-t-a-r-t/index.html
+$dokka.location:ui/UIStage///PointingToDeclaration/only-auto-crop/ui/-u-i-stage/index.html
+$dokka.location:ui/UIStage/entries/#/PointingToDeclaration/only-auto-crop/ui/-u-i-stage/entries.html
+$dokka.location:ui/UIStage/valueOf/#kotlin.String/PointingToDeclaration/only-auto-crop/ui/-u-i-stage/value-of.html
+$dokka.location:ui/UIStage/values/#/PointingToDeclaration/only-auto-crop/ui/-u-i-stage/values.html
+imageProcessing
+logic
+ui
+ui.fileChoose
+ui.screens

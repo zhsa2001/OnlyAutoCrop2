@@ -4,6 +4,8 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.dokka") version "2.0.0"
+
 }
 
 group = "org.metropoliten.zhsa2001"
